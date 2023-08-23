@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -10,6 +8,8 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IEndDragHandler, 
 
     [HideInInspector] public Image image;
     [HideInInspector] public Transform parentAfterDrag;
+
+    public bool IsEquipped = false;
 
     public bool ShopItem = false;
 

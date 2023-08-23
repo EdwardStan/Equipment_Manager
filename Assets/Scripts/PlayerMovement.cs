@@ -1,6 +1,4 @@
-using DG.Tweening;
-using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -22,11 +20,14 @@ public class PlayerMovement : MonoBehaviour
      public InventoryItem EquippedHead;
 
     public GameObject Body;
-    public GameObject Head; 
+    public GameObject Head;
 
     bool canInteract = false;
 
     Collider2D currentColission;
+
+    public GameObject InteractionPanel;
+    public TMP_Text InteractionText;
 
     private void Awake()
     {
@@ -39,6 +40,8 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
+
+    #region Movement
     private void FixedUpdate()
     {
         playerMovement = Vector3.zero;
@@ -47,6 +50,31 @@ public class PlayerMovement : MonoBehaviour
 
         UpdateAnimationOnMove();
     }
+    void UpdateAnimationOnMove()
+    {
+        rb.MovePosition(transform.position + playerMovement * walkingSpeed * Time.deltaTime);
+
+        anim.SetFloat("Horizontal", playerMovement.x);
+        anim.SetFloat("Vertical", playerMovement.y);
+        anim.SetFloat("Speed", playerMovement.sqrMagnitude);
+
+        if (Body != null)
+        {
+            Body.GetComponent<Animator>().SetFloat("Horizontal", playerMovement.x);
+            Body.GetComponent<Animator>().SetFloat("Vertical", playerMovement.y);
+            Body.GetComponent<Animator>().SetFloat("Speed", playerMovement.sqrMagnitude);
+        }
+        if (Head != null)
+        {
+            Head.GetComponent<Animator>().SetFloat("Horizontal", playerMovement.x);
+            Head.GetComponent<Animator>().SetFloat("Vertical", playerMovement.y);
+            Head.GetComponent<Animator>().SetFloat("Speed", playerMovement.sqrMagnitude);
+        }
+    }
+
+    #endregion
+
+    #region Interaction
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.E))
@@ -57,27 +85,6 @@ public class PlayerMovement : MonoBehaviour
         {
             Inventory.Instance.OpenInventory(false);
         }
-    }
-
-    private void OnTriggerStay2D(Collider2D collision)
-    {
-        canInteract = true;
-        currentColission = collision;
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        canInteract = true;
-        currentColission = collision;
-
-        Debug.Log("Character can interact with " + collision.name);
-    }
-
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        canInteract = false;
-        currentColission = null;
-        Debug.Log("Character can't interact with " + collision.name + " anymore");
     }
 
     void Interact()
@@ -99,27 +106,37 @@ public class PlayerMovement : MonoBehaviour
         coinAnimator.Play("Coin Rotate");
     }
 
-    void UpdateAnimationOnMove()
+    #endregion
+
+    #region Trigger Collision Controller
+
+    private void OnTriggerStay2D(Collider2D collision)
     {
-        rb.MovePosition(transform.position + playerMovement * walkingSpeed * Time.deltaTime);
-
-        anim.SetFloat("Horizontal", playerMovement.x);
-        anim.SetFloat("Vertical", playerMovement.y);
-        anim.SetFloat("Speed", playerMovement.sqrMagnitude);
-
-        if(Body != null)
-        {
-            Body.GetComponent<Animator>().SetFloat("Horizontal", playerMovement.x);
-            Body.GetComponent<Animator>().SetFloat("Vertical", playerMovement.y);
-            Body.GetComponent<Animator>().SetFloat("Speed", playerMovement.sqrMagnitude);
-        }
-        if(Head != null)
-        {
-            Head.GetComponent<Animator>().SetFloat("Horizontal", playerMovement.x);
-            Head.GetComponent<Animator>().SetFloat("Vertical", playerMovement.y);
-            Head.GetComponent<Animator>().SetFloat("Speed", playerMovement.sqrMagnitude);
-        }
+        canInteract = true;
+        currentColission = collision;
     }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        canInteract = true;
+        currentColission = collision;
+        InteractionPanel.SetActive(true);
+        InteractionText.text = "Press E to interact with " + collision.tag;
+
+        Debug.Log("Character can interact with " + collision.name);
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        canInteract = false;
+        currentColission = null;
+        InteractionPanel.SetActive(false);
+        Debug.Log("Character can't interact with " + collision.name + " anymore");
+    }
+
+    #endregion
+
+    #region update appearance
 
     public void UpdateAppearance()
     {
@@ -178,5 +195,6 @@ public class PlayerMovement : MonoBehaviour
 
         
     }
+    #endregion
 }
 

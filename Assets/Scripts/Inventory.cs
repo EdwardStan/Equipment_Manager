@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,12 +15,14 @@ public class Inventory : MonoBehaviour
     public GameObject inventoryItemPrefab;
     public InventorySlot[] inventorySlots;
 
+
+    //Gold
     int playerGold = 0;
 
     public TMP_Text goldText;
 
+    //Tranzaction
     public bool IsShopingTime = false;
-
     public GameObject AttemptScreen;
     public TMP_Text AttemptText;
     public TMP_Text AttemptedItemName;
@@ -35,11 +34,12 @@ public class Inventory : MonoBehaviour
     private void Awake()
     {
         playerGold = 0;
-        UpdateUI();
+        goldText.text = playerGold.ToString();
 
         Instance = this;
     }
 
+    #region Item Manipulation
     public void AddItem(Item item)
     {
         for (int i = 0; i < inventorySlots.Length; i++)
@@ -60,7 +60,9 @@ public class Inventory : MonoBehaviour
         InventoryItem inventoryItem = newItemObj.GetComponentInChildren<InventoryItem>();
         inventoryItem.InitializeItem(item);
     }
+    #endregion
 
+    #region UI
     public void OpenInventory(bool isShop)
     {
         EquipamentSubsection.SetActive(!isShop);
@@ -78,6 +80,9 @@ public class Inventory : MonoBehaviour
 
     }
 
+    #endregion
+
+    #region ShopTranzaction
     public void AttemptTranzaction(bool buy, Item item, GameObject objToSell)
     {
         AttemptScreen.SetActive(true);
@@ -113,21 +118,20 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    void UpdateUI()
-    {
-        goldText.text = playerGold.ToString();
-    }
+    #endregion
 
+
+    #region GOLD
     public void GetGold(int goldAmount)
     {
         playerGold = playerGold + goldAmount;
-        UpdateUI();
+        goldText.text = playerGold.ToString();
     }
 
     public void ConsumeGold(int goldAmount)
     {
         playerGold = playerGold - goldAmount;
-        UpdateUI();
+        goldText.text = playerGold.ToString();
     }
-
+    #endregion
 }

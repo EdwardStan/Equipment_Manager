@@ -1,10 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEditor.Progress;
 
 public class InventorySlot : MonoBehaviour, IDropHandler, IPointerExitHandler, IPointerEnterHandler, IPointerDownHandler
 {
@@ -16,16 +11,17 @@ public class InventorySlot : MonoBehaviour, IDropHandler, IPointerExitHandler, I
 
     public void OnDrop(PointerEventData eventData)
     {
+        InventoryItem dropedItem = eventData.pointerDrag.GetComponent<InventoryItem>();
 
-       if(transform.childCount == 0 && SupportedItems == ItemType.None)
-       {
-            InventoryItem inventoryItem = eventData.pointerDrag.GetComponent<InventoryItem>();
-            inventoryItem.parentAfterDrag = transform;
+        if (transform.childCount == 0 && SupportedItems == ItemType.None)
+        {
+            /*InventoryItem inventoryItem = eventData.pointerDrag.GetComponent<InventoryItem>();*/
+            dropedItem.parentAfterDrag = transform;
         }
-        else if(SupportedItems != ItemType.None && eventData.pointerDrag.GetComponent<InventoryItem>().item.type != ItemType.None)
+        if (SupportedItems != ItemType.None && dropedItem.item.type != ItemType.None && !dropedItem.IsEquipped)
         {
             Debug.Log("ItemCompatible");
-            if(transform.childCount > 0)
+            if (transform.childCount > 0)
             {
                 Transform itemToReplace = transform.GetChild(0);
                 Inventory.Instance.AddItem(itemToReplace.GetComponent<InventoryItem>().item);
@@ -33,10 +29,21 @@ public class InventorySlot : MonoBehaviour, IDropHandler, IPointerExitHandler, I
             }
 
 
-            InventoryItem inventoryItem = eventData.pointerDrag.GetComponent<InventoryItem>();
-            inventoryItem.parentAfterDrag = transform;
-            inventoryItem.image.raycastTarget = false;
-            EquipItem(inventoryItem);
+            /*InventoryItem inventoryItem = dropedItem;*/
+            dropedItem.parentAfterDrag = transform;
+            dropedItem.image.raycastTarget = false;
+            dropedItem.IsEquipped = true;
+            EquipItem(dropedItem);
+        }
+        else if (dropedItem.IsEquipped && SupportedItems == ItemType.None)
+        {
+            dropedItem.parentAfterDrag = transform;
+            dropedItem.image.raycastTarget = false;
+            dropedItem.IsEquipped = false;
+            if (dropedItem.item.type == ItemType.Head) { PlayerMovement.Instance.EquippedHead = null; }
+            if (dropedItem.item.type == ItemType.Body) { PlayerMovement.Instance.EquippedBody = null; }
+
+            PlayerMovement.Instance.UpdateAppearance();
         }
     }
 
@@ -52,9 +59,9 @@ public class InventorySlot : MonoBehaviour, IDropHandler, IPointerExitHandler, I
                 break;
             case ItemType.Body:
                 Debug.Log("Equip for body");
-                PlayerMovement.Instance.EquippedBody = item; 
+                PlayerMovement.Instance.EquippedBody = item;
                 PlayerMovement.Instance.UpdateAppearance();
-                break; 
+                break;
         }
     }
 
@@ -72,7 +79,7 @@ public class InventorySlot : MonoBehaviour, IDropHandler, IPointerExitHandler, I
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if(transform.childCount == 0) { return; }
+        if (transform.childCount == 0) { return; }
 
         if (hovering && !ShopSlot)
         {
@@ -83,7 +90,7 @@ public class InventorySlot : MonoBehaviour, IDropHandler, IPointerExitHandler, I
                 Destroy(transform.GetChild(0).gameObject);
             }
 
-            if(SupportedItems == ItemType.Head)
+            if (SupportedItems == ItemType.Head)
             {
                 PlayerMovement.Instance.EquippedHead = null;
             }
@@ -91,7 +98,7 @@ public class InventorySlot : MonoBehaviour, IDropHandler, IPointerExitHandler, I
             {
                 PlayerMovement.Instance.EquippedBody = null;
             }
-         
+
             PlayerMovement.Instance.UpdateAppearance();
         }
     }
